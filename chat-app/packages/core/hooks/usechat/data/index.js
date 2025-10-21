@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { llm, answerTemplate } from '@chatapp/llm';
-import { tools, llmWithTools } from '@chatapp/tools';
+import { llm } from '@chatapp/llm';
+import { chain } from '@chatapp/chains';
 
 export const useChatLogic = () => {
     const [messages, setMessages] = useState([]);
@@ -15,30 +15,12 @@ export const useChatLogic = () => {
         setLoading(true);
         setMessages((prev) => [...prev, { text: question, role: 'user' }]);
         inputRef.current.value = '';
-
-        const result = await llmWithTools.invoke(question);
-        console.log(result);
-
-        let finalAnswer = '';
-
-        if (!result.content && result.tool_calls?.length > 0) {
-            const tool = result.tool_calls[0];
-            console.log(tools[tool.name]);
-
-            const toolResult = await tools[tool.name].invoke(tool.args);
-            console.log(toolResult);
-
-            finalAnswer = await llm.invoke(
-                await answerTemplate.format({ toolResult, question })
-            );
-            console.log(finalAnswer);
-        } else {
-            finalAnswer = result;
-        }
+        console.log(chain);
+        const answer = await chain.invoke(question);
 
         setMessages((prev) => [
             ...prev,
-            { role: 'assistant', text: finalAnswer.content || 'Ingen respons.' },
+            { role: 'assistant', text: answer.content || 'Ingen respons.' },
         ]);
 
         setLoading(false);

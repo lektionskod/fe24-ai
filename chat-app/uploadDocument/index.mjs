@@ -24,7 +24,7 @@ try {
     await SupabaseVectorStore.fromDocuments(
         splittedText,
         new OllamaEmbeddings({
-            model : "llama3.2:latest"
+            model : "llama3.1:8b"
         }), {
             client : supabaseClient, 
             tableName : 'documents'

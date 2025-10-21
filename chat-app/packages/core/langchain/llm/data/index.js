@@ -2,7 +2,7 @@ import { ChatOllama } from '@langchain/ollama';
 import { PromptTemplate } from '@langchain/core/prompts';
 
 export const llm = new ChatOllama({
-    model : 'llama3.2:latest'
+    model : 'llama3.1:8b'
 });
 
 export const answerTemplate = PromptTemplate.fromTemplate(
