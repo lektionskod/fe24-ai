@@ -4,17 +4,26 @@ import { createClient } from '@supabase/supabase-js';
 import { readFile } from 'fs/promises';
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import "dotenv/config";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+
+const combineDocuments = (docs) => {
+    return docs.map(doc => doc.pageContent).join('\n\n');
+}
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY;
 
 try {
-    const text = await readFile(`${process.cwd()}/potter.txt`, 'utf-8');
+    // const loader = new PDFLoader(`${process.cwd()}/harry-potter-and-the-philosophers-stone-by-jk-rowling.pdf`);
 
+    // const text = combineDocuments(await loader.load());
+    const text = await readFile(`${process.cwd()}/potterfull.txt`, "utf-8");
+
+    
     const textSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize : 600,
+        chunkSize : 500,
         separators : ["\n\n", "\n", " ", ""],
-        chunkOverlap : 50
+        chunkOverlap : 100
     });
 
     const splittedText = await textSplitter.createDocuments([text]);
@@ -30,6 +39,9 @@ try {
             tableName : 'documents'
         }
     );
+
+    console.log('SUCCESS');
+    
 } catch(error) {
     console.log('ERROR:', error.message);
     

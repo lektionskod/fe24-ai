@@ -1,20 +1,39 @@
-import { RunnableSequence } from "@langchain/core/runnables";
+import { RunnableSequence, RunnablePassthrough } from "@langchain/core/runnables";
 import { retriever } from '@chatapp/retriever';
-import { answerTemplate } from '@chatapp/templates';
+import { standaloneQuestionTemplate, answerTemplate } from '@chatapp/templates';
 import { combineDocuments } from '@chatapp/combinedocuments';
 import { llm } from '@chatapp/llm';
+import { StringOutputParser } from "@langchain/core/output_parsers";
+
+const standaloneQuestionChain = RunnableSequence.from([
+    standaloneQuestionTemplate,
+    llm,
+    new StringOutputParser()
+]);
+
+const retrieverChain = RunnableSequence.from([
+    (data) => {
+        console.log(data);
+        return data.standaloneQuestion;
+    },
+    retriever,
+    combineDocuments
+]);
+
+const answerChain = RunnableSequence.from([
+    answerTemplate,
+    llm,
+    new StringOutputParser()
+]);
 
 export const chain = RunnableSequence.from([
-    async (question) => {
-        console.log('test');
-        const context = await retriever.invoke(question);
-        console.log(context);
-        console.log(combineDocuments(context));
-        return { context, question };
+    {
+        standaloneQuestion: standaloneQuestionChain,
+        originalQuestion: new RunnablePassthrough(),
     },
-    async ({ context, question }) => {
-        return await llm.invoke(
-            await answerTemplate.format({ context, question })
-        );
-    }
+    {
+        context: retrieverChain,
+        question: ({ originalQuestion }) => originalQuestion.question,
+    },
+    answerChain
 ]);

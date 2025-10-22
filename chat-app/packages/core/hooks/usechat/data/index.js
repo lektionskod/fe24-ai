@@ -16,11 +16,11 @@ export const useChatLogic = () => {
         setMessages((prev) => [...prev, { text: question, role: 'user' }]);
         inputRef.current.value = '';
         console.log(chain);
-        const answer = await chain.invoke(question);
+        const answer = await chain.invoke({question});
 
         setMessages((prev) => [
             ...prev,
-            { role: 'assistant', text: answer.content || 'Ingen respons.' },
+            { role: 'assistant', text: answer || 'Ingen respons.' },
         ]);
 
         setLoading(false);
